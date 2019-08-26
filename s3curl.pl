@@ -58,6 +58,7 @@ my $copySourceObject;
 my $copySourceRange;
 my $postBody;
 my $calculateContentMD5 = 0;
+my $endpoint;
 
 my $DOTFILENAME=".s3curl";
 my $EXECFILE=$FindBin::Bin;
@@ -98,6 +99,7 @@ GetOptions(
     'help' => \$help,
     'debug' => \$debug,
     'calculateContentMd5' => \$calculateContentMD5,
+    'endpoint:s' => \$endpoint,
 );
 
 my $usage = <<USAGE;
@@ -114,6 +116,7 @@ Usage $0 --id friendly-name (or AWSAccessKeyId) [options] -- [curl-options] [URL
   --copySrcRange {startIndex}-{endIndex}
   --createBucket [<region>]   create-bucket with optional location constraint
   --head                      HEAD request
+  --endpoint                  S3 endpoint
   --debug                     enable debug logging
  common curl options:
   -H 'x-amz-acl: public-read' another way of using canned ACLs
@@ -172,6 +175,11 @@ my %xamzHeaders;
 $xamzHeaders{'x-amz-acl'}=$acl if (defined $acl);
 $xamzHeaders{'x-amz-copy-source'}=$copySourceObject if (defined $copySourceObject);
 $xamzHeaders{'x-amz-copy-source-range'}="bytes=$copySourceRange" if (defined $copySourceRange);
+
+if (defined($endpoint)) {
+    unshift @endpoints, $endpoint;
+    debug("set endpoint: @endpoints");
+}
 
 # try to understand curl args
 for (my $i=0; $i<@ARGV; $i++) {
